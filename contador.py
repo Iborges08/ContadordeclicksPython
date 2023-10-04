@@ -14,7 +14,7 @@ db_config = {
     "database": "seu_banco_de_dados",
 }
 
-# Funçao que puxa dados do MySQL
+# Funçao que vai puxar dados do MySQL
 def obter_dados_do_mysql(cpf):
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
@@ -31,7 +31,7 @@ def obter_dados_do_mysql(cpf):
 
 @app.route('/')
 def home():
-    return 'Bem-vindo! Clique <a href="https://dunice.adv.br/">aqui</a> para incrementar o contador.'
+    return 'Bem-vindo! Clique <a href="https://dunice.adv.br/">aqui</a> para acessar o site da Dunice & Marcon.'
 
 @app.route('/clicar')
 def clicar():
