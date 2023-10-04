@@ -3,7 +3,7 @@ import mysql.connector
 
 app = Flask(__name__)
 
-#  conexão MySQL
+# Configuração de conexão MySQL
 db_config = {
     "host": "seu_host_mysql",
     "user": "seu_usuario_mysql",
@@ -11,23 +11,14 @@ db_config = {
     "database": "seu_banco_de_dados",
 }
 
-# Função para atualizar a contagem de cliques no banco de dados
-def atualizar_contagem_de_cliques(cpf, ip):
+# Função para atualizar o IP no banco de dados
+def atualizar_ip_no_banco(ip):
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
 
-    # Verifique se já existe uma entrada para o CPF
-    cursor.execute("SELECT contador FROM cliques WHERE cpf = %s", (cpf,))
-    result = cursor.fetchone()
-
-    if result:
-        # Se já existe uma entrada para o CPF, atualize a contagem
-        contador = result[0] + 1
-        cursor.execute("UPDATE cliques SET contador = %s WHERE cpf = %s", (contador, cpf))
-    else:
-        # Se não existe uma entrada para o CPF, insira uma nova entrada
-        cursor.execute("INSERT INTO cliques (cpf, contador, ip) VALUES (%s, 1, %s)", (cpf, ip))
-
+    # Insere o IP na tabela IPs
+    cursor.execute("INSERT INTO ips (ip) VALUES (%s)", (ip,))
+    
     conn.commit()
     cursor.close()
     conn.close()
@@ -56,13 +47,24 @@ def home():
     # Obter o endereço IP do cliente
     ip = request.remote_addr
 
-    # Atualizar a contagem de cliques no banco de dados
-    atualizar_contagem_de_cliques(cpf, ip)
+    # Atualizar o IP no banco de dados
+    atualizar_ip_no_banco(ip)
 
-    # Obter a contagem de cliques do banco de dados
+    # Atualizar a contagem de cliques no banco de dados
     contador_de_cliques = obter_contagem_de_cliques(cpf)
 
     return f'Contagem de Cliques: {contador_de_cliques}, Endereço IP: {ip}'
+
+# Rota para registrar o IP
+@app.route('/registrar_ip')
+def registrar_ip():
+    # Obter o endereço IP do cliente
+    ip = request.remote_addr
+
+    # Atualizar o IP no banco de dados
+    atualizar_ip_no_banco(ip)
+
+    return 'IP registrado com sucesso!'
 
 if __name__ == '__main__':
     app.run()
