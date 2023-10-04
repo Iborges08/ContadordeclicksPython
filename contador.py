@@ -1,10 +1,7 @@
-from flask import Flask
+from flask import Flask, request
 import mysql.connector
 
 app = Flask(__name__)
-
-# aqui começa o contador de cliques
-contador_de_cliques = 0
 
 #  conexão MySQL
 db_config = {
@@ -14,48 +11,58 @@ db_config = {
     "database": "seu_banco_de_dados",
 }
 
-# Funçao que puxa dados do MySQL
-def obter_dados_do_mysql(cpf):
+# Função para atualizar a contagem de cliques no banco de dados
+def atualizar_contagem_de_cliques(cpf, ip):
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
 
-    query = "SELECT nome, sobrenome FROM tabela_pessoas WHERE cpf = %s"
-    cursor.execute(query, (cpf,))
-    
-    data = cursor.fetchone()
-    
+    # Verifique se já existe uma entrada para o CPF
+    cursor.execute("SELECT contador FROM cliques WHERE cpf = %s", (cpf,))
+    result = cursor.fetchone()
+
+    if result:
+        # Se já existe uma entrada para o CPF, atualize a contagem
+        contador = result[0] + 1
+        cursor.execute("UPDATE cliques SET contador = %s WHERE cpf = %s", (contador, cpf))
+    else:
+        # Se não existe uma entrada para o CPF, insira uma nova entrada
+        cursor.execute("INSERT INTO cliques (cpf, contador, ip) VALUES (%s, 1, %s)", (cpf, ip))
+
+    conn.commit()
     cursor.close()
     conn.close()
-    
-    return data
+
+# Função para obter a contagem de cliques do banco de dados
+def obter_contagem_de_cliques(cpf):
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT contador FROM cliques WHERE cpf = %s", (cpf,))
+    result = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if result:
+        return result[0]
+    else:
+        return 0
 
 @app.route('/')
 def home():
-    return 'Bem-vindo! Clique <a href="https://dunice.adv.br/">aqui</a> para incrementar o contador.'
-
-@app.route('/clicar')
-def clicar():
-    global contador_de_cliques
-    contador_de_cliques += 1
-
     # CPF da pessoa
-    cpf = "12345678900"  
+    cpf = "12345678900"
 
-    # Obter dados da pessoa a partir do MySQL
-    pessoa = obter_dados_do_mysql(cpf)
+    # Obter o endereço IP do cliente
+    ip = request.remote_addr
 
-    if pessoa:
-        nome, sobrenome = pessoa
+    # Atualizar a contagem de cliques no banco de dados
+    atualizar_contagem_de_cliques(cpf, ip)
 
-        # Calcular o hash baseado no CPF, nome e sobrenome
-        hash_data = f"{cpf}{nome}{sobrenome}"
-        # usando SHA-256 para calcular o hash
-        import hashlib
-        hashed_data = hashlib.sha256(hash_data.encode()).hexdigest()
+    # Obter a contagem de cliques do banco de dados
+    contador_de_cliques = obter_contagem_de_cliques(cpf)
 
-        return f'Contagem de Cliques: {contador_de_cliques}<br>Hash gerado: {hashed_data}'
-    else:
-        return 'CPF não encontrado na base de dados'
+    return f'Contagem de Cliques: {contador_de_cliques}, Endereço IP: {ip}'
 
 if __name__ == '__main__':
     app.run()
