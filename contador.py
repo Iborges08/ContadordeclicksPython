@@ -1,70 +1,38 @@
 from flask import Flask, request
-import mysql.connector
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+import hashlib
 
 app = Flask(__name__)
 
-# Configuração de conexão MySQL
-db_config = {
-    "host": "seu_host_mysql",
-    "user": "seu_usuario_mysql",
-    "password": "sua_senha_mysql",
-    "database": "seu_banco_de_dados",
-}
+# Configuração do banco de dados
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://seu_usuario:sua_senha@localhost/sua_base_de_dados'
+db = SQLAlchemy(app)
 
-# Função para atualizar o IP no banco de dados
-def atualizar_ip_no_banco(ip):
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-
-    # Insere o IP na tabela IPs
-    cursor.execute("INSERT INTO ips (ip) VALUES (%s)", (ip,))
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-# Função para obter a contagem de cliques do banco de dados
-def obter_contagem_de_cliques(cpf):
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT contador FROM cliques WHERE cpf = %s", (cpf,))
-    result = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
-
-    if result:
-        return result[0]
-    else:
-        return 0
+# Modelo da tabela para armazenar os cliques
+class Clique(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    hash_info = db.Column(db.String(64), nullable=False, unique=True)
+    data_hora = db.Column(db.DateTime, default=datetime.utcnow)
 
 @app.route('/')
 def home():
-    # CPF da pessoa
-    cpf = "12345678900"
+    return 'Bem-vindo! Clique <a href="https://dunice.adv.br/">aqui</a> para acessar nosso site.'
 
-    # Obter o endereço IP do cliente
-    ip = request.remote_addr
+@app.route('/clicar')
+def clicar():
+    # onde vai puxar o endereço do ip do usuario 
+    user_ip = request.remote_addr
 
-    # Atualizar o IP no banco de dados
-    atualizar_ip_no_banco(ip)
+    # Criar um hash com base no IP e na data/hora atual
+    hash_info = hashlib.sha256(f"{user_ip}{datetime.utcnow()}".encode()).hexdigest()
 
-    # Atualizar a contagem de cliques no banco de dados
-    contador_de_cliques = obter_contagem_de_cliques(cpf)
+    # Salvar o clique na base de dados com o hash gerado
+    novo_clique = Clique(hash_info=hash_info)
+    db.session.add(novo_clique)
+    db.session.commit()
 
-    return f'Contagem de Cliques: {contador_de_cliques}, Endereço IP: {ip}'
-
-# Rota para registrar o IP
-@app.route('/registrar_ip')
-def registrar_ip():
-    # Obter o endereço IP do cliente
-    ip = request.remote_addr
-
-    # Atualizar o IP no banco de dados
-    atualizar_ip_no_banco(ip)
-
-    return 'IP registrado com sucesso!'
+    return 'Clique registrado com sucesso!'
 
 if __name__ == '__main__':
     app.run()
