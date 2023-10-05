@@ -6,7 +6,7 @@ import hashlib
 app = Flask(__name__)
 
 # Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://seu_usuario:sua_senha@localhost/sua_base_de_dados'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://nome_usuario:senha@localhost/sua_base_de_dados'
 db = SQLAlchemy(app)
 
 
