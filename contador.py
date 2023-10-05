@@ -10,7 +10,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://nome_usuario:senha@localhost/su
 db = SQLAlchemy(app)
 
 
-# Modelo da tabela para armazenar os cliques
+#  tabela pra armazenar os cliques
 class Clique(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     hash_info = db.Column(db.String(64), nullable=False, unique=True)
