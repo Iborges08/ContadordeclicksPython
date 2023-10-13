@@ -45,19 +45,23 @@ def obter_dados_do_mysql(cpf):
 
 @app.route('/')
 def home():
-    return 'Bem-vindo! Clique <a href="https://dunice.adv.br/">aqui</a> para acessar o site da Dunice & Marcon.'
+    return 'Bem-vindo! Clique <a href="">aqui</a> para acessar o site da Dunice & Marcon.'
 
 
 @app.route('/clicar')
 def clicar():
-    # onde vai puxar o endereço do ip do usuario 
+    # Obter os parâmetros da URL
+    nome = request.args.get('nome')
+    quantidade_de_click = request.args.get('quantidade_de_click')
+    
+    # Onde vai puxar o endereço IP do usuário
     user_ip = request.remote_addr
 
     # Criar um hash com base no IP e na data/hora atual
     hash_info = hashlib.sha256(f"{user_ip}{datetime.utcnow()}".encode()).hexdigest()
 
-    # Salvar o clique na base de dados com o hash gerado
-    novo_clique = Clique(hash_info=hash_info)
+    # Salvar o clique na base de dados com o hash gerado e as informações da URL
+    novo_clique = Clique(hash_info=hash_info, nome=nome, quantidade_de_click=quantidade_de_click)
     db.session.add(novo_clique)
     db.session.commit()
 
