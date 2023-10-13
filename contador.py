@@ -16,9 +16,6 @@ class Clique(db.Model):
     hash_info = db.Column(db.String(64), nullable=False, unique=True)
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)
 
-@app.route('/')
-def home():
-    return 'Bem-vindo! Clique <a href="https://dunice.adv.br/">aqui</a> para acessar nosso site.'
 
 #  conexão MySQL
 db_config = {
@@ -42,10 +39,6 @@ def obter_dados_do_mysql(cpf):
     conn.close()
     
     return data
-
-@app.route('/')
-def home():
-    return 'Bem-vindo! Clique <a href="">aqui</a> para acessar o site da Dunice & Marcon.'
 
 
 @app.route('/clicar')
