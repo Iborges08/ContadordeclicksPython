@@ -1,64 +1,40 @@
+import mysql.connector
 from flask import Flask, request
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-import hashlib
 
-app = Flask(__name__)
+# Conectar-se ao banco de dados
+db_connection = mysql.connector.connect(
+    host="seu_host",
+    user="seu_usuario",
+    password="sua_senha",
+    database="click_counter"
+)
 
-# Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://nome_usuario:senha@localhost/sua_base_de_dados'
-db = SQLAlchemy(app)
+app = Flask(__name)
 
+@app.route("/registrar_clique", methods=["GET"])
+def registrar_clique():
+    # Certifique-se de que a solicitação vem de um gateway confiável, caso seja necessário
+    # Por exemplo, você pode verificar o IP do gateway
+    ip_gateway = "IP_DO_GATEWAY"  # Substitua pelo IP real do gateway
+    if request.remote_addr != ip_gateway:
+        return "Acesso não autorizado."
 
-#  tabela pra armazenar os cliques
-class Clique(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    hash_info = db.Column(db.String(64), nullable=False, unique=True)
-    data_hora = db.Column(db.DateTime, default=datetime.utcnow)
+    # Obtenha os parâmetros da solicitação enviada pelo gateway
+    ip_address = request.args.get("ip_address")
+    nome = request.args.get("nome")
+    quantidade_de_click = request.args.get("quantidade_de_click")
 
+    cursor = db_connection.cursor()
 
-#  conexão MySQL
-db_config = {
-    "host": "seu_host_mysql",
-    "user": "seu_usuario_mysql",
-    "password": "sua_senha_mysql",
-    "database": "seu_banco_de_dados",
-}
+    # Inserir um novo clique no banco de dados
+    insert_query = "INSERT INTO clicks (ip_address, nome, quantidade_de_click, data_hora) VALUES (%s, %s, %s, NOW())"
+    cursor.execute(insert_query, (ip_address, nome, quantidade_de_click))
 
-# Funçao que vai puxar dados do MySQL
-def obter_dados_do_mysql(cpf):
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-
-    query = "SELECT nome, sobrenome FROM tabela_pessoas WHERE cpf = %s"
-    cursor.execute(query, (cpf,))
-    
-    data = cursor.fetchone()
-    
+    db_connection.commit()
     cursor.close()
-    conn.close()
-    
-    return data
 
+    return "Clique registrado com sucesso."
 
-@app.route('/clicar')
-def clicar():
-    # Obter os parâmetros da URL
-    nome = request.args.get('nome')
-    quantidade_de_click = request.args.get('quantidade_de_click')
-    
-    # Onde vai puxar o endereço IP do usuário
-    user_ip = request.remote_addr
+if __name__ == "__main__":
+    app.run(debug=True, host='0.0.0.0', port=5000)
 
-    # Criar um hash com base no IP e na data/hora atual
-    hash_info = hashlib.sha256(f"{user_ip}{datetime.utcnow()}".encode()).hexdigest()
-
-    # Salvar o clique na base de dados com o hash gerado e as informações da URL
-    novo_clique = Clique(hash_info=hash_info, nome=nome, quantidade_de_click=quantidade_de_click)
-    db.session.add(novo_clique)
-    db.session.commit()
-
-    return 'Clique registrado com sucesso!'
-
-if __name__ == '__main__':
-    app.run()
