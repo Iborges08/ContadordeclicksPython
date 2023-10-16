@@ -3,10 +3,10 @@ from flask import Flask, request
 
 # Conectar-se ao banco de dados
 db_connection = mysql.connector.connect(
-    host="",
-    user="",
-    password="",
-    database=""
+    host="localhost",
+    user="root",
+    password="010203",
+    database="Dunice"
 )
 
 app = Flask(__name__)
