@@ -9,7 +9,7 @@ db_connection = mysql.connector.connect(
     database=""
 )
 
-app = Flask(__name)
+app = Flask(__name__)
 
 @app.route("/registrar_clique", methods=["GET"])
 def registrar_clique():
