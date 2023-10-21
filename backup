@@ -1,0 +1,34 @@
+# import mysql.connector
+
+# # Conectar ao banco de dados
+
+# conexao = mysql.connector.connect(
+#     host='localhost',
+#     port= '3306',
+#     user='root',
+#     password='12345678',
+#     database='cliques'
+# )
+
+
+# # Criar um objeto cursor
+# cursor = conexao.cursor()
+
+# # Consulta para recuperar o contador atual
+# consulta = "SELECT contador FROM Cliques WHERE id = 1"
+# cursor.execute(consulta)
+# contador_atual = cursor.fetchone()[0]
+
+# # Fechar o cursor e a conexão quando terminar
+# cursor.close()
+# conexao.close()
+
+
+
+
+
+
+# # Consulta para recuperar o contador atual
+# consulta = "SELECT contador FROM Cliques WHERE id = 1"
+# cursor.execute(consulta)
+# contador_atual = cursor.fetchone()[0]
