@@ -1,0 +1,17 @@
+# import requests
+
+# url = "https://exemplo.com/api/capturar-cliques"
+# dados = {
+#     "ip": "192.168.1.100",
+#     "data": "2023-10-20",
+#     "hora": "15:30:00"
+# }
+
+# # Envia uma solicitação POST
+# resposta = requests.post(url, data=dados)
+
+# if resposta.status_code == 200:
+#     print("Clique capturado com sucesso.")
+# else:
+#     print(f"Erro: {resposta.status_code}")
+#     print(resposta.text)
