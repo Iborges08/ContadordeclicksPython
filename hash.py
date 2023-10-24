@@ -106,7 +106,7 @@ def registrar_clique_via_link():
     return jsonify({"clique_id": click_id})
 
 # Rota para capturar o clique em "dunice.adv.br"
-@app.route('/https://dunice.adv.br/', methods=['GET'])
+@app.route('/DESKTOP-BAQ42COdunice.adv.br/', methods=['GET'])
 def capturar_clique_dunice():
     return "Clique capturado."
 
