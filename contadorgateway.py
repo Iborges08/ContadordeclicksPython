@@ -1,121 +1,53 @@
+from flask import Flask, request, jsonify
 import mysql.connector
-from flask import Flask, request
-
-
-# Configuração da conexão com o banco de dados
-conexao = mysql.connector.connect(
-    host='localhost',
-    port= '3306',
-    user='root',
-    password='12345678',
-    database='cliques'
-)
-
-# Crie um cursor
-cursor = conexao.cursor()
-
-# Defina a consulta SQL para criar a tabela de cliques
-consulta = """
-CREATE TABLE cliques (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    ip VARCHAR(45),
-    data_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    contador INT
-)
-"""
-
-# Execute a consulta SQL para criar a tabela
-cursor.execute(consulta)
-
-# Confirme as alterações no banco de dados
-conexao.commit()
-
-# Feche o cursor e a conexão
-cursor.close()
-conexao.close()
+import hashlib
+import datetime
 
 app = Flask(__name__)
 
-# Configuração da conexão com o banco de dados
-conexao = mysql.connector.connect(
-    host='localhost',
-    port= '3306',
-    user='root',
-    password='12345678',
-    database='cliques'
-)
-
-@app.route('/')
-def contador_de_cliques():
-    cursor = conexao.cursor()
-    
-# from flask import Flask, request
-
-app = Flask(__name__)
-
-@app.route('/')
-def contador_de_cliques():
-    # Este é o local apropriado para acessar request.remote_addr
-    ip = request.remote_addr
-
-    return f"IP da máquina da pessoa: {ip}"
-
-if __name__ == '__main__':
-    app.run()
-
-
-app = Flask(__name__)
-
-@app.route('/')
-def contador_de_cliques():
-     # Este é o local apropriado para acessar request.remote_addr
-     ip = request.remote_addr
-
-     return f"IP da máquina da pessoa: {ip}"
-
-if __name__ == '__main__':
-    app.run()
-    
-    # Conectar ao banco de dados
+# Configurações do banco de dados
 conexao = mysql.connector.connect(
     host='localhost',
     port='3306',
     user='root',
     password='12345678',
-    database='cliques'
+    database='dunice'
 )
 
-# Criar um objeto cursor
-cursor = conexao.cursor()
+# Função para gerar um hash de 4 números a partir do IP do cliente
+def generate_hash(ip):
+    hash_obj = hashlib.md5(ip.encode())
+    return hash_obj.hexdigest()[:4]
 
-# Consulta para recuperar o contador atual
-consulta = "SELECT contador FROM Cliques WHERE id = 1"
-cursor.execute(consulta)
-resultado = cursor.fetchone()
+# Rota para registrar um clique via um link
+@app.route('/DESKTOP-BAQ42COdunice.adv.br/', methods=['GET'])
+def registrar_clique_via_link():
+    ip = request.remote_addr
+    hash_code = generate_hash(ip)
+    data_hora = datetime.datetime.now()]
+    
+    @app.route('/', methods=['GET'])
+    def rota_raiz():
+        return "Olá, mundo!"
 
-if resultado is not None:
-    contador_atual = resultado[0]
-else:
-    contador_atual = 0
+    
 
-# Fechar o cursor e a conexão quando terminar
-cursor.close()
-conexao.close()
-
-# Incrementa o contador
-novo_contador = contador_atual + 1
-print("Novo contador:", novo_contador)
-
-novo_contador = contador_atual + 1
-
-# Atualiza o contador e registra o IP, data e hora no banco de dados
-update_query = "UPDATE Cliques SET contador = %s, ip = %s WHERE id = 1"
-cursor.execute(update_query, (novo_contador, ip))
-conexao.commit()
-
-cursor.close()
-
-return f"Contagem de cliques: {novo_contador}"
+    
+    # Conectar ao banco de dados
+    conn = conexao
+    cursor = conn.cursor()
+    
+    # Inserir os dados na tabela de cliques
+    cursor.execute("INSERT INTO cliques(ip, hash_code, data_hora) VALUES (%s, %s, %s)", (ip, hash_code, data_hora))
+    conn.commit()
+    
+    # Obter o ID do clique recém-inserido
+    cursor.execute("SELECT LAST_INSERT_ID()")
+    click_id = cursor.fetchone()[0]
+    
+    conn.close()
+    
+    return jsonify({"clique_id": click_id})
 
 if __name__ == '__main__':
     app.run()
