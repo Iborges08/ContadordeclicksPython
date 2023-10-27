@@ -39,7 +39,7 @@ def capturar_clique_dunice():
         cursor.execute("INSERT INTO cliques(ip, hash_code, data_hora) VALUES (%s, %s, %s)", (ip, hash_code, data_hora))
         conn.commit()
 
-        conn.close()
+        # conn.close()
 
         return jsonify({"message": "Clique capturado com sucesso!"})
     except Exception as e:
