@@ -11,11 +11,11 @@ conexao = mysql.connector.connect(
      user='root',
      password='12345678',
      database='dunice'
- )
+    )
 
 app = Flask(__name__)
 
-# Configurações do banco de dados
+
 
 
 # Função para gerar um hash de 4 números a partir do IP do cliente
