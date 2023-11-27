@@ -67,12 +67,9 @@ def obter_ipv4():
 @app.route('/capturar_clique', methods=['GET'])
 def capturar_clique_dunice():
     try:
-        # Obter o endereço IP local da máquina
+       
         ip = obter_ipv4()
         
-        # Se quiser também capturar o endereço IP externo (público), substitua a linha acima por:
-        # ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-
         hash_code = generate_hash(ip)
         data_hora = datetime.datetime.now()
 
